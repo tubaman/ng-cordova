@@ -10,3 +10,8 @@ Gemfile.lock
 .DS_Store*
 npm-debug.log
 .project
+
+# buildout
+.installed.cfg
+bin
+parts
