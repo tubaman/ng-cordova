@@ -430,16 +430,28 @@ angular.module('ngCordova.plugins.batteryStatus', [])
 
 angular.module('ngCordova.plugins.ble', [])
 
-  .factory('$cordovaBLE', ['$q', function ($q) {
+  .factory('$cordovaBLE', ['$q', '$timeout', function ($q, $timeout) {
+
+    var notifyDeferred = null;
 
     return {
       scan: function (services, seconds) {
         var q = $q.defer();
-        ble.scan(services, seconds, function (result) {
-          q.resolve(result);
+
+        ble.startScan(services, function (result) {
+          q.notify(result);
         }, function (error) {
           q.reject(error);
         });
+
+        $timeout(function() {
+            ble.stopScan(function() {
+              q.resolve();
+            }, function(error) {
+              q.reject(error);
+            });
+        }, seconds*1000);
+
         return q.promise;
       },
 
@@ -495,8 +507,9 @@ angular.module('ngCordova.plugins.ble', [])
 
       startNotification: function (deviceID, serviceUUID, characteristicUUID) {
         var q = $q.defer();
+        notifyDeferred = q;
         ble.startNotification(deviceID, serviceUUID, characteristicUUID, function (result) {
-          q.resolve(result);
+          q.notify(result);
         }, function (error) {
           q.reject(error);
         });
@@ -506,6 +519,10 @@ angular.module('ngCordova.plugins.ble', [])
       stopNotification: function (deviceID, serviceUUID, characteristicUUID) {
         var q = $q.defer();
         ble.stopNotification(deviceID, serviceUUID, characteristicUUID, function (result) {
+          if (notifyDeferred !== null) {
+            notifyDeferred.resolve("notification stopped");
+            notifyDeferred = null;
+          }
           q.resolve(result);
         }, function (error) {
           q.reject(error);
@@ -4057,7 +4074,7 @@ angular.module('ngCordova.plugins.instagram', [])
 
 angular.module('ngCordova.plugins.keyboard', [])
 
-  .factory('$cordovaKeyboard', ['$rootScope', '$timeout', function ($rootScope, $timeout) {
+  .factory('$cordovaKeyboard', ['$rootScope', function ($rootScope) {
 
     var keyboardShowEvent = function () {
       $rootScope.$evalAsync(function () {
