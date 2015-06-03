@@ -5,6 +5,8 @@ angular.module('ngCordova.plugins.ble', [])
 
   .factory('$cordovaBLE', ['$q', '$timeout', function ($q, $timeout) {
 
+    var notifyDeferred = null;
+
     return {
       scan: function (services, seconds) {
         var q = $q.defer();
@@ -78,8 +80,9 @@ angular.module('ngCordova.plugins.ble', [])
 
       startNotification: function (deviceID, serviceUUID, characteristicUUID) {
         var q = $q.defer();
+        notifyDeferred = q;
         ble.startNotification(deviceID, serviceUUID, characteristicUUID, function (result) {
-          q.resolve(result);
+          q.notify(result);
         }, function (error) {
           q.reject(error);
         });
@@ -89,6 +92,10 @@ angular.module('ngCordova.plugins.ble', [])
       stopNotification: function (deviceID, serviceUUID, characteristicUUID) {
         var q = $q.defer();
         ble.stopNotification(deviceID, serviceUUID, characteristicUUID, function (result) {
+          if (notifyDeferred !== null) {
+            notifyDeferred.resolve("notification stopped");
+            notifyDeferred = null;
+          }
           q.resolve(result);
         }, function (error) {
           q.reject(error);
