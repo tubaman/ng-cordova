@@ -56,7 +56,10 @@ ngCordovaMocks.factory('$cordovaBLE', ['$q', '$timeout', function ($q, $timeout)
     scan: function (services, seconds) {
       var q = $q.defer();
       $timeout(function () {
-        q.resolve(deviceScan);
+        q.notify(deviceScan);
+      }, seconds * 100);
+      $timeout(function () {
+        q.resolve();
       }, seconds * 1000);
       return q.promise;
     },
