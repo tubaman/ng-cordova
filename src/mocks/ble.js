@@ -7,6 +7,8 @@
  * in an app build with ngCordova.
  **/
 ngCordovaMocks.factory('$cordovaBLE', ['$q', '$timeout', function ($q, $timeout) {
+  var notifyDeferred = null;
+
   var deviceScan = {
     name: 'Test Device',
     id: 'AA:BB:CC:DD:EE:FF',
@@ -104,11 +106,22 @@ ngCordovaMocks.factory('$cordovaBLE', ['$q', '$timeout', function ($q, $timeout)
       return q.promise;
     },
 
-    notify: function (deviceID, serviceUUID, characteristicUUID) {
+    startNotification: function (deviceID, serviceUUID, characteristicUUID) {
       var q = $q.defer();
+      notifyDeferred = q;
       $timeout(function () {
-        q.resolve(true);
-      }, 100);
+        q.notify(true);
+      }, 1000);
+      return q.promise;
+    },
+
+    stopNotification: function (deviceID, serviceUUID, characteristicUUID) {
+      var q = $q.defer();
+      if (notifyDeferred !== null) {
+        notifyDeferred.resolve("notification stopped");
+        notifyDeferred = null;
+      }
+      q.resolve(result);
       return q.promise;
     },
 
