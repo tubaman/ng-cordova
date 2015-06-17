@@ -8,6 +8,28 @@ angular.module('ngCordova.plugins.ble', [])
     var notifyDeferred = null;
 
     return {
+      startScan: function (services) {
+        var q = $q.defer();
+
+        ble.startScan(services, function (result) {
+          q.notify(result);
+        }, function (error) {
+          q.reject(error);
+        });
+        return q.promise;
+      },
+
+      stopScan: function () {
+        var q = $q.defer();
+
+        ble.stopScan(function (result) {
+          q.resolve(result);
+        }, function (error) {
+          q.reject(error);
+        });
+        return q.promise;
+      },
+
       scan: function (services, seconds) {
         var q = $q.defer();
 
