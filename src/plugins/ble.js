@@ -5,11 +5,13 @@ angular.module('ngCordova.plugins.ble', [])
 
   .factory('$cordovaBLE', ['$q', '$timeout', function ($q, $timeout) {
 
+    var scanDeferred = null;
     var notifyDeferred = null;
 
     return {
       startScan: function (services) {
         var q = $q.defer();
+        scanDeferred = q;
 
         ble.startScan(services, function (result) {
           q.notify(result);
@@ -23,6 +25,10 @@ angular.module('ngCordova.plugins.ble', [])
         var q = $q.defer();
 
         ble.stopScan(function (result) {
+          if (scanDeferred !== null) {
+            scanDeferred.resolve("scan stopped");
+            scanDeferred = null;
+          }
           q.resolve(result);
         }, function (error) {
           q.reject(error);
